@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "notify-broadcast"
+version = "0.0.1"
+authors = [
+  { name="Jason But", email="jbut@swin.edu.au" },
+]
+description = "Broadcast version of notify-send to allow root processes to send a notification to all users with an active DBUS session"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+dependencies = ["dasbus", "psutil", "pygobject"]
+
+[project.scripts]
+notify-broadcast = "notify-broadcast.app:notify_broadcast"
+
+[project.urls]
+Homepage = "https://github.com/jason-but/notify-broadcast"
+Issues = "https://github.com/jason-but/notify-broadcast/issues"
