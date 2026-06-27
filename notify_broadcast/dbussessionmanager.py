@@ -51,7 +51,7 @@ class DBUSSessionManager:
         """
         try:
             # 1) Find the process ID for program "name" owned by self.__uid
-            self.__log.debug(f'Searching for process "{name}" {uid}')
+            self.__log.debug(f'Searching for process "{name}"')
             manager_pid = [p.pid for p in psutil.process_iter(['name', 'pid', 'uids']) if p.info['name'] == name and p.info['uids'].real == uid][0]
             self.__log.debug(f'Found Process ID: {manager_pid}')
 
@@ -79,7 +79,7 @@ class DBUSSessionManager:
             raise DBUSSessionManager.DBUSSessionNotFound(f'Unable to locate process "{name}"')
 
         except (IOError, PermissionError):
-            raise DBUSSessionManager.DBUSSessionNotFound(f'Unable to access environment variables for process ID ({manager_pid})')
+            raise DBUSSessionManager.DBUSSessionNotFound(f'Unable to access environment variables for process ID ({manager_pid}) - Need to run as root or user with appropriate permissions')
 
     def __find_users(self):
         """
