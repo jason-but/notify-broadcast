@@ -12,7 +12,7 @@ from notify_broadcast import DBUSSessionManager
 
 def notify_broadcast():
     """
-    This is the main application
+    This is the main application which will be called directly when running the installed notify-broadcast application
     """
     # Create the command line argument parser and parse all arguments
     parser = NotifyBroadcastArgumentParser()
