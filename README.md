@@ -22,6 +22,7 @@ pip install notify-broadcast
 Seek information elsewhere about installing in a virtual environment
 
 The install should pull in all dependencies. At present these are:
+- colorlog: https://github.com/borntyping/python-colorlog/
 - dasbus: https://github.com/dasbus-project/dasbus
 - psutil: https://github.com/giampaolo/psutil
 - PyGObject: https://pygobject.gnome.org
