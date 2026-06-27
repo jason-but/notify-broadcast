@@ -20,7 +20,7 @@ license-files = ["LICEN[CS]E*"]
 dependencies = ["dasbus", "psutil", "pygobject"]
 
 [project.scripts]
-notify-broadcast = "notify-broadcast.app:notify_broadcast"
+notify-broadcast = "notify_broadcast.app:notify_broadcast"
 
 [project.urls]
 Homepage = "https://github.com/jason-but/notify-broadcast"
