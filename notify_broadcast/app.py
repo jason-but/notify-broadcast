@@ -1,4 +1,5 @@
 from notify_broadcast import NotifyBroadcastArgumentParser
+from notify_broadcast import DBUSSessionManager
 
 import argparse
 import logging
@@ -11,11 +12,11 @@ def notify_broadcast():
     print('Notifying broadcast...')
     foo = NotifyBroadcastArgumentParser()
 
-    a = foo.parse_args()
+    x = foo.parse_args()
+    logging.basicConfig(format='%(asctime)s - %(levelname)-8s %(name)s.%(funcName)s() - %(message)s')
 
-    logging.info('info')
-    logging.warn('warn')
-    logging.error('err')
-    logging.critical('critical')
-    logging.debug('debug')
-    print(a)
+    print(foo.notification)
+
+    bar = DBUSSessionManager(x.log_level)
+
+    bar.Notify(foo.notification, x.print_id)

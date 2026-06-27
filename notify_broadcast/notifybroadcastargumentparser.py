@@ -245,9 +245,12 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         super().__init__(*args, **kwargs)
 
         # Add parameter options
-        self.add_arguments()
+        self.__add_arguments()
 
-    def add_arguments(self):
+        # Create variable to store generated notification from parsed arguments
+        self.__notification = None
+
+    def __add_arguments(self):
         """ Add command line arguments to the argument parser """
         self.add_argument('-a', '--app-name', type=str, default='', help='Specifies the app name for the notification')
         self.add_argument('-i', '--icon', type=str, default='dialog-information', help='Specifies an icon filename or stock icon to display.')
@@ -269,3 +272,28 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         self.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="WARNING", help="Set the logging level for the core application.")
 
         self.add_argument("--global-log-level", action=NotifyBroadcastArgumentParser.SetGlobalLogLevel, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="Set the global logging level (includes third-party libraries).")
+
+    def parse_args(self, args=None, namespace=None):
+        """
+        Overload parse_args method. Constructs the notification details (stored in __notification) from the parsed command line arguments.
+          - Call the base class method to parse the arguments and store in temporary variable
+          - Extract parameters into a tuple (ready to pass to Notify() and store in __notification
+
+        :return: Return the parsed arguments Namespace as required by parse_args()
+        """
+        # Call base class method to parse arguments and store in internal variable
+        parsed = super().parse_args(args=args, namespace=namespace)
+
+        self.__notification = (parsed.app_name, parsed.replace_id, parsed.icon, parsed.summary, parsed.body, parsed.action, parsed.hint, parsed.expire_time)
+
+        return parsed
+
+    @property
+    def notification(self) -> tuple:
+        """
+        Retrieves the notification constructed from the command line arguments as a class property.
+
+        :return: The value stored in internal variable __notification
+        """
+        return self.__notification
+
