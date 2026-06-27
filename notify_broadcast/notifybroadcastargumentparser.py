@@ -319,4 +319,3 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         :return: The value stored in internal variable __log_level
         """
         return self.__log_level
-
