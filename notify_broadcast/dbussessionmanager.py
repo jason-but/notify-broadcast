@@ -1,12 +1,16 @@
+"""
+This module implements the DBUSSessionManager class which finds all user DBUS sessions and maps their NotificationProxy to allow broadcast of
+notifications to all users with a DBUS session
+"""
+# Import System Libraries
 import os
 import psutil
 import re
 import logging
+
+# Import dasbus library modules
 from dasbus.connection import SystemMessageBus, AddressedMessageBus
 from dasbus.client.proxy import InterfaceProxy
-
-class NotifyUser:
-    ...
 
 
 class DBUSSessionManager:
@@ -15,17 +19,25 @@ class DBUSSessionManager:
         pass
 
     def __init__(self, log_level: str):
-        # Establish logger for NotifyBroadcast class
-        self.__log = logging.getLogger('UserDBUSSessionManager')
-        self.__log_level = log_level
-        self.__log.setLevel(log_level)
+        """
+        Initialise class and internal variables:
+          - Store UID of current user so we can change EUID during running
+          - Populate __users mapping uid to a DBUS InterfaceProxy that we can use to notify that user
+
+        :param log_level: Level to set for the internal class logger
+        """
+        self.__log = logging.getLogger('DBUSSessionManager')
+        if log_level is not None:
+            self.__log.setLevel(log_level)
+        else:
+            self.__log.debug('using default log level')
         self.__log.info(f'Constructing Class')
 
         self.__app_uid = os.geteuid()
+        self.__log.debug(f'Storing UID of user running application: {self.__app_uid}')
+
         self.__users: dict[int, InterfaceProxy] = {}
-
         self.__find_users()
-
         self.__log.debug(f'User DBUS sessions: {self.__users}')
 
     def __get_notify_proxy(self, uid: int, name: str) -> InterfaceProxy:
@@ -70,6 +82,9 @@ class DBUSSessionManager:
             raise DBUSSessionManager.DBUSSessionNotFound(f'Unable to access environment variables for process ID ({manager_pid})')
 
     def __find_users(self):
+        """
+        Find all users with a login session, locate if they have a DBUS session attached to it, then populate __users with that information
+        """
         self.__log.info('Finding DBUS sessions for all users')
         bus = SystemMessageBus()
         login_bus = bus.get_proxy("org.freedesktop.login1", "/org/freedesktop/login1")
@@ -86,7 +101,13 @@ class DBUSSessionManager:
             else:
                 self.__log.info(f'Non-graphical login session {session_id}: User [{username}({uid})]')
 
-    def Notify(self, notification: tuple, print_id: bool):
+    def broadcast_notification(self, notification: tuple, print_id: bool):
+        """
+        Broadcast a notification to all users using the DBUS Notification Proxies as listed in __users
+
+        :param notification: Tuple containing parameters to pass to the Notify() method of the Notification Proxy
+        :param print_id: Boolean indicating whether the message ID should be printed to screen
+        """
         self.__log.info(f'Sending notification ({notification}) to all users')
         for uid, notify_proxy in self.__users.items():
             self.__log.debug(f'Changing UID to {uid} to send notification')

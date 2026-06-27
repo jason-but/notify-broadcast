@@ -249,6 +249,8 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
 
         # Create variable to store generated notification from parsed arguments
         self.__notification = None
+        self.__print_id = None
+        self.__log_level = None
 
     def __add_arguments(self):
         """ Add command line arguments to the argument parser """
@@ -269,7 +271,7 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         self.add_argument('summary', type=str, help='exam configuration file to be used for student collection - toml format')
         self.add_argument('body', type=str, help='exam solution file to be placed in collection directory')
 
-        self.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="WARNING", help="Set the logging level for the core application.")
+        self.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="Set the logging level for the core application.")
 
         self.add_argument("--global-log-level", action=NotifyBroadcastArgumentParser.SetGlobalLogLevel, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="Set the global logging level (includes third-party libraries).")
 
@@ -277,7 +279,8 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         """
         Overload parse_args method. Constructs the notification details (stored in __notification) from the parsed command line arguments.
           - Call the base class method to parse the arguments and store in temporary variable
-          - Extract parameters into a tuple (ready to pass to Notify() and store in __notification
+          - Extract parameters into a tuple (ready to pass to Notify()) and store in __notification
+          - Extract other variables to make directly accessible via properties
 
         :return: Return the parsed arguments Namespace as required by parse_args()
         """
@@ -285,6 +288,8 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         parsed = super().parse_args(args=args, namespace=namespace)
 
         self.__notification = (parsed.app_name, parsed.replace_id, parsed.icon, parsed.summary, parsed.body, parsed.action, parsed.hint, parsed.expire_time)
+        self.__print_id = parsed.print_id
+        self.__log_level = parsed.log_level
 
         return parsed
 
@@ -296,4 +301,22 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         :return: The value stored in internal variable __notification
         """
         return self.__notification
+
+    @property
+    def print_id(self) -> bool:
+        """
+        Retrieves the print_id from the command line arguments as a class property.
+
+        :return: The value stored in internal variable __print_id
+        """
+        return self.__print_id
+
+    @property
+    def log_level(self) -> str:
+        """
+        Retrieves the log_level from the command line arguments as a class property.
+
+        :return: The value stored in internal variable __log_level
+        """
+        return self.__log_level
 
