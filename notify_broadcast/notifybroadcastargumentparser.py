@@ -1,14 +1,17 @@
+"""
+This module implements the NotifyBroadcastArgumentParser class which provides the command-line argument parser for the notify-broadcast command
+"""
 # Import System Libraries
 import argparse
+import logging
 from gi.repository import GLib
 
 
-# PRIVATE ARGPARSE ACTION CLASSES INTERNAL TO MODULE
 class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
     """
     Extends ArgumentParser to provide parameter parsing for the notify-broadcast command.
 
-    Allowed arguments:
+    Installs arguments similar to notify-send
     """
     class NotifyHints(argparse.Action):
         """
@@ -201,31 +204,55 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
             # Save dictionary back to namespace
             setattr(namespace, self.dest, actions_list)
 
-    def __init__(selfself, *args, **kwargs):
+    class SetGlobalLogLevel(argparse.Action):
         """
+        Process the global-log-level parameter and set the default system log level as an action
 
-        :param args:
-        :param kwargs:
+        NOTE: This class is designed to be used for validating a formatted parameter in the context of command-line argument parsing.
+        When an instance of this class is called with a string, it checks if the string conforms to the appropriate format specification.
+        If the provided string is in error, it raises an error suitable for argument parsing utilities.
         """
+        def __call__(self, parser, namespace, values, option_string=None):
+            """
+            Parse command line option as DEBUG, INFO, WARNING, ERROR, or CRITICAL, then set the logging log-level to match
+
+            :param parser: ArgParse instance, used to send errors back to the parser.
+            :param namespace: Current parsed parameters.
+            :param values: Current option being parsed.
+            :param option_string: Actual option (e.g. --urgency)
+            """
+            logging.basicConfig(level=values)
+
+            # Save the value to the namespace for standard argparse behavior
+            setattr(namespace, self.dest, values)
+
+    # NotifyBroadcastArgumentParser member methods begin here
+    def __init__(self, *args, **kwargs):
+        """
+        Overloaded Constructor
+
+        Set default description and argparse parameters before calling superclass constructor
+
+        Then call add_arguments() to add the required command-line parameters
+        """
+        # Default options
+        kwargs.setdefault('description', 'Notify Broadcast\n\nSend a Broadcast DBUS notification to all users')
+        kwargs.setdefault('formatter_class', argparse.ArgumentDefaultsHelpFormatter)
+        kwargs.setdefault('allow_abbrev', False)
+        kwargs.setdefault('conflict_handler', 'resolve')
+
         # Initialise the parent class
         super().__init__(*args, **kwargs)
 
         # Add parameter options
+        self.add_arguments()
 
     def add_arguments(self):
-        """
-
-        :return:
-        """
-        # Create the main parser with global CLI parameters
- #       parser = argparse.ArgumentParser(description='Notify Broadcast\n\nSend a Broadcast DBUS notification to all users',
-  #                                       formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-   #                                      allow_abbrev=False,
-    #                                     )
+        """ Add command line arguments to the argument parser """
         self.add_argument('-a', '--app-name', type=str, default='', help='Specifies the app name for the notification')
         self.add_argument('-i', '--icon', type=str, default='dialog-information', help='Specifies an icon filename or stock icon to display.')
         self.add_argument('-t', '--expire-time', type=int, default=-1, help='The duration, in milliseconds, for the notification to appear on screen. Value of 0 means no expiry, while -1 uses the server default expiry.')
-        self.add_argument('--hint', action=NotifyBroadcastArgumentParser.NotifyHints, metavar='TYPE:NAME:VALUE', help='Notification hints to pass to server (e.g., int:urgency:2)')
+        self.add_argument('-h', '--hint', action=NotifyBroadcastArgumentParser.NotifyHints, metavar='TYPE:NAME:VALUE', help='Notification hints to pass to server (e.g., int:urgency:2)')
         self.add_argument('-c', '--category', action=NotifyBroadcastArgumentParser.NotifyCategory, metavar='TYPE', dest='hint', help='Specifies the notification category.')
         self.add_argument('-u', '--urgency', action=NotifyBroadcastArgumentParser.NotifyUrgency, choices=['low', 'normal', 'critical'], dest='hint', help='Specifies the urgency level (low, normal, critical).')
 
@@ -241,6 +268,4 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
 
         self.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="WARNING", help="Set the logging level for the core application.")
 
-        self.add_argument("--global-log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], default="WARNING", help="Set the global logging level (includes third-party libraries).")
-
-#        return parser.parse_args()
+        self.add_argument("--global-log-level", action=NotifyBroadcastArgumentParser.SetGlobalLogLevel, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="Set the global logging level (includes third-party libraries).")
