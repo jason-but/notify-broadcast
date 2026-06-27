@@ -2,4 +2,4 @@ from .dbussessionmanager import DBUSSessionManager
 
 from .notifybroadcastargumentparser import NotifyBroadcastArgumentParser
 
-from .app import notify_broadcast
+from .notify_broadcast import notify_broadcast

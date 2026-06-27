@@ -17,10 +17,10 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
-dependencies = ["dasbus", "psutil", "pygobject"]
+dependencies = ["colorlog", "dasbus", "psutil", "pygobject"]
 
 [project.scripts]
-notify-broadcast = "notify_broadcast.app:notify_broadcast"
+notify-broadcast = "notify_broadcast.notify_broadcast:notify_broadcast"
 
 [project.urls]
 Homepage = "https://github.com/jason-but/notify-broadcast"
