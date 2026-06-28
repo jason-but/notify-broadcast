@@ -21,12 +21,11 @@ class NotifyTTY:
         :param user_type: Text description of user type for logging purposes
         :param log_level: Level to set for the internal class logger
         """
-        self.__log = logging.getLogger('NotifyTTY')
+        self.__log = logging.getLogger(self.__class__.__name__)
         if log_level is not None:
             self.__log.setLevel(log_level)
         else:
             self.__log.debug('using default log level')
-        self.__log.info(f'Constructing Class')
 
         self.__user_type = user_type
         self.__tty_list: list[tuple[int, pathlib.Path]] = []
@@ -39,7 +38,7 @@ class NotifyTTY:
         """ Return string representation of class """
         return f'{self.__user_type.capitalize()} TTY sessions: {self.__tty_list}'
 
-    def add_tty(self, uid: int, tty_path: pathlib.Path) -> None:
+    def add_session(self, uid: int, tty_path: pathlib.Path) -> None:
         """
         Add the provided user ID and TTY to the internal list
 

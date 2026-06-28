@@ -7,7 +7,7 @@ import colorlog
 
 # Import Package Modules
 from notify_broadcast import NotifyBroadcastArgumentParser
-from notify_broadcast import DBUSSessionManager
+from notify_broadcast import SessionManager
 
 
 def notify_broadcast():
@@ -24,5 +24,6 @@ def notify_broadcast():
                          )
 
     # Create the DBUSSessionManager, then broadcast the notification to all users
-    dbus_manager = DBUSSessionManager(parser.log_level)
+    dbus_manager = SessionManager(parser.log_level)
+    dbus_manager.find_sessions()
     dbus_manager.broadcast_notification(parser.notification, parser.print_id)

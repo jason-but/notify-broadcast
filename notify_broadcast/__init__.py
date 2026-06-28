@@ -1,6 +1,8 @@
+from .notifydbus import NotifyDBUS
+
 from .notifytty import NotifyTTY
 
-from .dbussessionmanager import DBUSSessionManager
+from .sessionmanager import SessionManager
 
 from .notifybroadcastargumentparser import NotifyBroadcastArgumentParser
 
