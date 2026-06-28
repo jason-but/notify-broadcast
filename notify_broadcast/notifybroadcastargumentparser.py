@@ -271,6 +271,9 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         self.add_argument('summary', type=str, help='Notification summary - used as heading for notification')
         self.add_argument('body', type=str, help='Notification detail - primary notification text')
 
+        self.add_argument('-L', '--local', action='store_true', help='Send notification to all TTY local sessions')
+        self.add_argument('-R', '--remote', action='store_true', help='Send notification to all TTY remote(ssh) sessions')
+
         self.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="Set the logging level for the core application.")
 
         self.add_argument("--global-log-level", action=NotifyBroadcastArgumentParser.SetGlobalLogLevel, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="Set the global logging level (includes third-party libraries).")

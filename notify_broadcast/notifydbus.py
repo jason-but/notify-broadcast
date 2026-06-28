@@ -27,7 +27,7 @@ class NotifyDBUS:
         :param user_type: Text description of user type for logging purposes
         :param log_level: Level to set for the internal class logger
         """
-        self.__log = logging.getLogger(self.__class__.__name__)
+        self.__log = logging.getLogger(f'{self.__class__.__name__}({user_type})')
         if log_level is not None:
             self.__log.setLevel(log_level)
         else:

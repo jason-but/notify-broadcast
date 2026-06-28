@@ -21,7 +21,7 @@ class NotifyTTY:
         :param user_type: Text description of user type for logging purposes
         :param log_level: Level to set for the internal class logger
         """
-        self.__log = logging.getLogger(self.__class__.__name__)
+        self.__log = logging.getLogger(f'{self.__class__.__name__}({user_type})')
         if log_level is not None:
             self.__log.setLevel(log_level)
         else:
@@ -63,9 +63,7 @@ class NotifyTTY:
 
         :param notification: String to display on each TTY
         """
-        if len(self.__tty_list) == 0:
-            self.__log.info(f'No {self.__user_type} users to send notification to')
-            return
+        if len(self.__tty_list) == 0: return
 
         self.__log.info(f'Sending notification to {self.__user_type} users')
         self.__log.debug(f'Notification text: {notification!r}')

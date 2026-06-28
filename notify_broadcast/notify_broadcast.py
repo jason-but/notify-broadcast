@@ -25,5 +25,5 @@ def notify_broadcast():
 
     # Create the DBUSSessionManager, then broadcast the notification to all users
     dbus_manager = SessionManager(parser.log_level)
-    dbus_manager.find_sessions()
+    dbus_manager.find_sessions(False, True)
     dbus_manager.broadcast_notification(parser.notification, parser.print_id)

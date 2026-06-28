@@ -42,7 +42,7 @@ class SessionManager:
         self.__local_users: NotifyTTY = NotifyTTY('local', log_level)
         self.__remote_users: NotifyTTY = NotifyTTY('remote', log_level)
 
-    def find_sessions(self):
+    def find_sessions(self, add_local: bool, add_remote: bool) -> None:
         """
         Find all users with a login session, locate if they have a DBUS session attached to it, then populate __users with that information
         """
@@ -66,11 +66,17 @@ class SessionManager:
                     # Console session
                     try:
                         tty_path = pathlib.Path('/dev', session_proxy.TTY)
-                        self.__log.info(f'{'Remote' if session_proxy.Remote else 'Local'} TTY login session {session_id}: User [{username}({uid})] on TTY({session_proxy.TTY})')
-                        if session_proxy.Remote:
-                            self.__remote_users.add_session(uid, tty_path)
+
+                        # If session is Remote, then need to add IF add_remote is True, otherwise need to add IF add_local is True
+                        add_session = add_remote if session_proxy.Remote else add_local
+                        if add_session:
+                            self.__log.info(f'{'Remote' if session_proxy.Remote else 'Local'} TTY login session {session_id}: User [{username}({uid})] on TTY({session_proxy.TTY})')
+                            # Select session manager to add TTY session to
+                            session_manager = self.__remote_users if session_proxy.Remote else self.__local_users
+                            session_manager.add_session(uid, tty_path)
                         else:
-                            self.__local_users.add_session(uid, tty_path)
+                            self.__log.info(f'Ignoring {'remote' if session_proxy.Remote else 'local'} TTY login session {session_id}: User [{username}({uid}) on TTY({session_proxy.TTY})')
+
                     except NotifyTTY.TTYError as e:
                         self.__log.warning(f'{username} - {e}')
                 case _:
