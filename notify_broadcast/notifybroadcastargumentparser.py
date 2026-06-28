@@ -268,8 +268,8 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
 
         self.add_argument('-e', '--transient', action=NotifyBroadcastArgumentParser.NotifyTransient, dest='hint', help='Show a transient notification. Transient notifications by-pass the server\'s persistence capability, if any. And so it won\'t be preserved until the user acknowledges it.')
 
-        self.add_argument('summary', type=str, help='exam configuration file to be used for student collection - toml format')
-        self.add_argument('body', type=str, help='exam solution file to be placed in collection directory')
+        self.add_argument('summary', type=str, help='Notification summary - used as heading for notification')
+        self.add_argument('body', type=str, help='Notification detail - primary notification text')
 
         self.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="Set the logging level for the core application.")
 
