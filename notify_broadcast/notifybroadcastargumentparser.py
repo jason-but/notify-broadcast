@@ -293,6 +293,8 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         self.__notification = (parsed.app_name, parsed.replace_id, parsed.icon, parsed.summary, parsed.body, parsed.action, parsed.hint, parsed.expire_time)
         self.__print_id = parsed.print_id
         self.__log_level = parsed.log_level
+        self.__local = parsed.local
+        self.__remote = parsed.remote
 
         return parsed
 
@@ -313,6 +315,24 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         :return: The value stored in internal variable __print_id
         """
         return self.__print_id
+
+    @property
+    def notify_local(self) -> str:
+        """
+        Retrieves whether we are sending notifications to local TTY sessions from the command line arguments as a class property.
+
+        :return: The value stored in internal variable __local
+        """
+        return self.__local
+
+    @property
+    def notify_remote(self) -> str:
+        """
+        Retrieves whether we are sending notifications to remote TTY sessions from the command line arguments as a class property.
+
+        :return: The value stored in internal variable __remote
+        """
+        return self.__remote
 
     @property
     def log_level(self) -> str:
