@@ -13,6 +13,8 @@ import logging
 from dasbus.connection import SystemMessageBus, AddressedMessageBus
 from dasbus.client.proxy import InterfaceProxy
 
+from notify_broadcast import NotifyTTY
+
 
 class DBUSSessionManager:
     class DBUSSessionNotFound(Exception):
@@ -38,13 +40,13 @@ class DBUSSessionManager:
         self.__log.debug(f'Storing UID of user running application: {self.__app_uid}')
 
         self.__graphical_users: dict[int, InterfaceProxy] = {}
-        self.__local_users: list[tuple[int, pathlib.Path]] = []
-        self.__remote_users: list[tuple[int, pathlib.Path]] = []
+        self.__local_users: NotifyTTY = NotifyTTY('local', log_level)
+        self.__remote_users: NotifyTTY = NotifyTTY('remote', log_level)
         self.__find_users()
 
         if len(self.__graphical_users) > 0: self.__log.debug(f'Discovered graphical User DBUS sessions: {self.__graphical_users}')
-        if len(self.__local_users) > 0: self.__log.debug(f'Discovered local User TTY sessions: {self.__local_users}')
-        if len(self.__remote_users) > 0: self.__log.debug(f'Discovered remote User TTY sessions: {self.__remote_users}')
+        if len(self.__local_users) > 0: self.__log.debug(self.__local_users)
+        if len(self.__remote_users) > 0: self.__log.debug(self.__remote_users)
 
     def __get_notify_proxy(self, uid: int, name: str) -> InterfaceProxy:
         """
@@ -111,15 +113,12 @@ class DBUSSessionManager:
                     # Console session
                     try:
                         tty_path = pathlib.Path('/dev', session_proxy.TTY)
-                        self.__log.info(f'{'Remote' if session_proxy.Remote else 'Local'} TTY login session {session_id}: User [{username}({uid})] on TTY({session_proxy.TTY})')
-                        with open(tty_path, 'w'):
-                            pass
                         if session_proxy.Remote:
-                            self.__remote_users.append((uid, tty_path))
+                            self.__remote_users.add_tty(uid, tty_path)
                         else:
-                            self.__local_users.append((uid, tty_path))
-                    except Exception as e:
-                        self.__log.warning(f'Error confirming TTY Path({tty_path}) for user [{username}({uid})]: {e}')
+                            self.__local_users.add_tty(uid, tty_path)
+                    except NotifyTTY.TTYError as e:
+                        self.__log.warning(f'{username} - {e}')
                 case _:
                     # Unknown session type
                     self.__log.info(f'Non-graphical login session {session_id}: User [{username}({uid})]')
@@ -148,7 +147,4 @@ class DBUSSessionManager:
 
         # Sending TTY Notifications
         app_name, _, _, summary, body, _, _, _ = notification
-        for uid, tty_path in self.__remote_users:
-            self.__log.info(f'Remote User({uid}) on TTY({tty_path}): Sending Notification')
-            with open(tty_path, 'w') as f:
-                f.write(f'\n\n----------------------------------------\n{summary}{f' (received from {app_name})' if len(app_name) > 0 else ''}\n\n{body}\n----------------------------------------\n\n')
+        self.__remote_users.broadcast_notification(f'\n\n----------------------------------------\n{summary}{f' (received from {app_name})' if len(app_name) > 0 else ''}\n\n{body}\n----------------------------------------\n\n')

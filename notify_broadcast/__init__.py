@@ -1,3 +1,5 @@
+from .notifytty import NotifyTTY
+
 from .dbussessionmanager import DBUSSessionManager
 
 from .notifybroadcastargumentparser import NotifyBroadcastArgumentParser
