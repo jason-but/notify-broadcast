@@ -4,6 +4,7 @@ notifications to all users with a DBUS session
 """
 # Import System Libraries
 import os
+import pathlib
 import psutil
 import re
 import logging
@@ -36,9 +37,14 @@ class DBUSSessionManager:
         self.__app_uid = os.geteuid()
         self.__log.debug(f'Storing UID of user running application: {self.__app_uid}')
 
-        self.__users: dict[int, InterfaceProxy] = {}
+        self.__graphical_users: dict[int, InterfaceProxy] = {}
+        self.__local_users: list[tuple[int, pathlib.Path]] = []
+        self.__remote_users: list[tuple[int, pathlib.Path]] = []
         self.__find_users()
-        self.__log.debug(f'User DBUS sessions: {self.__users}')
+
+        if len(self.__graphical_users) > 0: self.__log.debug(f'Discovered graphical User DBUS sessions: {self.__graphical_users}')
+        if len(self.__local_users) > 0: self.__log.debug(f'Discovered local User TTY sessions: {self.__local_users}')
+        if len(self.__remote_users) > 0: self.__log.debug(f'Discovered remote User TTY sessions: {self.__remote_users}')
 
     def __get_notify_proxy(self, uid: int, name: str) -> InterfaceProxy:
         """
@@ -92,14 +98,32 @@ class DBUSSessionManager:
         for session_id, uid, username, seat, path in login_bus.ListSessions():
             # Get session details for this login
             session_proxy = bus.get_proxy("org.freedesktop.login1", path)
-            if session_proxy.Type in ['wayland', 'x11']:
-                try:
-                    self.__log.info(f'Login session {session_id}: User [{username}({uid})] on seat[{seat}] is a {session_proxy.Type} session')
-                    self.__users[uid] = self.__get_notify_proxy(uid, f'kwin_{session_proxy.Type}')
-                except DBUSSessionManager.DBUSSessionNotFound as e:
-                    self.__log.warning(e)
-            else:
-                self.__log.info(f'Non-graphical login session {session_id}: User [{username}({uid})]')
+
+            match session_proxy.Type:
+                case 'wayland' | 'x11':
+                    # Graphical session
+                    try:
+                        self.__log.info(f'Login session {session_id}: User [{username}({uid})] on seat[{seat}] is a {session_proxy.Type} session')
+                        self.__graphical_users[uid] = self.__get_notify_proxy(uid, f'kwin_{session_proxy.Type}')
+                    except DBUSSessionManager.DBUSSessionNotFound as e:
+                        self.__log.warning(e)
+                case 'tty':
+                    # Console session
+                    try:
+                        tty_path = pathlib.Path('/dev', session_proxy.TTY)
+                        self.__log.info(f'{'Remote' if session_proxy.Remote else 'Local'} TTY login session {session_id}: User [{username}({uid})] on TTY({session_proxy.TTY})')
+                        with open(tty_path, 'w'):
+                            pass
+                        if session_proxy.Remote:
+                            self.__remote_users.append((uid, tty_path))
+                        else:
+                            self.__local_users.append((uid, tty_path))
+                    except Exception as e:
+                        self.__log.warning(f'Error confirming TTY Path({tty_path}) for user [{username}({uid})]: {e}')
+                case _:
+                    # Unknown session type
+                    self.__log.info(f'Non-graphical login session {session_id}: User [{username}({uid})]')
+                    self.__log.debug(f'Session Type: {session_proxy.Type}')
 
     def broadcast_notification(self, notification: tuple, print_id: bool):
         """
@@ -109,7 +133,9 @@ class DBUSSessionManager:
         :param print_id: Boolean indicating whether the message ID should be printed to screen
         """
         self.__log.info(f'Sending notification ({notification}) to all users')
-        for uid, notify_proxy in self.__users.items():
+
+        # Sending DBUS/Graphical Notifications
+        for uid, notify_proxy in self.__graphical_users.items():
             self.__log.debug(f'Changing UID to {uid} to send notification')
             os.seteuid(uid)
 
@@ -119,3 +145,10 @@ class DBUSSessionManager:
 
             self.__log.debug(f'Reverting UID to {self.__app_uid}')
             os.seteuid(self.__app_uid)
+
+        # Sending TTY Notifications
+        app_name, _, _, summary, body, _, _, _ = notification
+        for uid, tty_path in self.__remote_users:
+            self.__log.info(f'Remote User({uid}) on TTY({tty_path}): Sending Notification')
+            with open(tty_path, 'w') as f:
+                f.write(f'\n\n----------------------------------------\n{summary}{f' (received from {app_name})' if len(app_name) > 0 else ''}\n\n{body}\n----------------------------------------\n\n')
