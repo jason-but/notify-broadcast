@@ -317,7 +317,7 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         return self.__print_id
 
     @property
-    def notify_local(self) -> str:
+    def notify_local(self) -> bool:
         """
         Retrieves whether we are sending notifications to local TTY sessions from the command line arguments as a class property.
 
@@ -326,7 +326,7 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         return self.__local
 
     @property
-    def notify_remote(self) -> str:
+    def notify_remote(self) -> bool:
         """
         Retrieves whether we are sending notifications to remote TTY sessions from the command line arguments as a class property.
 
