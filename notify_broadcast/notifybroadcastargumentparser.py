@@ -237,7 +237,7 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
         """
         # Default options
         kwargs.setdefault('description', 'Notify Broadcast\n\nSend a Broadcast DBUS notification to all users')
-        kwargs.setdefault('formatter_class', argparse.ArgumentDefaultsHelpFormatter)
+        kwargs.setdefault('formatter_class', argparse.RawTextHelpFormatter)
         kwargs.setdefault('allow_abbrev', False)
         kwargs.setdefault('conflict_handler', 'resolve')
 
@@ -255,8 +255,8 @@ class NotifyBroadcastArgumentParser(argparse.ArgumentParser):
     def __add_arguments(self):
         """ Add command line arguments to the argument parser """
         self.add_argument('-a', '--app-name', type=str, default='', help='Specifies the app name for the notification')
-        self.add_argument('-i', '--icon', type=str, default='dialog-information', help='Specifies an icon filename or stock icon to display.')
-        self.add_argument('-t', '--expire-time', type=int, default=-1, help='The duration, in milliseconds, for the notification to appear on screen. Value of 0 means no expiry, while -1 uses the server default expiry.')
+        self.add_argument('-i', '--icon', type=str, default='dialog-information', help='Specifies an icon filename or stock icon to display. (default: dialog-information)')
+        self.add_argument('-t', '--expire-time', type=int, default=-1, help='The duration, in milliseconds, for the notification to appear on screen. Value of 0 means no expiry, while -1 uses the server default expiry. (default: -1)')
         self.add_argument('-h', '--hint', action=NotifyBroadcastArgumentParser.NotifyHints, metavar='TYPE:NAME:VALUE', help='Notification hints to pass to server (e.g., int:urgency:2)')
         self.add_argument('-c', '--category', action=NotifyBroadcastArgumentParser.NotifyCategory, metavar='TYPE', dest='hint', help='Specifies the notification category.')
         self.add_argument('-u', '--urgency', action=NotifyBroadcastArgumentParser.NotifyUrgency, choices=['low', 'normal', 'critical'], dest='hint', help='Specifies the urgency level (low, normal, critical).')
