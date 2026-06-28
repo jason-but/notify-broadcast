@@ -5,7 +5,7 @@ able to send notifications to the GUI User
 
 `notify-send` only functions if run by the same user running the graphical session.
 
-I created `notify-broadcast` to effectively tack the same parameters as `notify-send` but that
+I created `notify-broadcast` to effectively take the same parameters as `notify-send` but that
 could be executed by the `root` user.
 
 The application searches for all active DBUS Notification sessions, and sends the notification to
